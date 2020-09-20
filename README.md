@@ -25,4 +25,4 @@ Users will need to input basic information of the sensor network such as width, 
 # Researchers
 1. Shang-Lin Hsu
 2. Yu-Ning Yu
-3.<a href="http://csc.csudh.edu/btang/"> Dr. Bin Tang </a>
+3. <a href="http://csc.csudh.edu/btang/"> Dr. Bin Tang </a>
