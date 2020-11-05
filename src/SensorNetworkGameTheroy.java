@@ -245,7 +245,7 @@ public class SensorNetworkGameTheroy {
 		// name for cols
 		String[] row = new String[]{"RemoveNode", "C_{V-{i}}", "C_V", "dataitems", "dead(Cvi)", "dead(Cv)", "deadNodeLabel",
 				"C_V_fake", "Utility_i_Truth_Telling", "C*_i", "C_i", "Utility_i_Lying", "Die_if_lie", "true_dataoffload", "fake_dataoffload", 
-				"Utility_Difference", "Discarded_amount"};
+				"Utility_Difference", "Discarded_amount", "True_energy_cost", "Single_node_cost"};
 		// write
 		for (int i = 0; i < row.length; i++) {
 			Cell energycell = energyrow.createCell(i);
@@ -257,7 +257,8 @@ public class SensorNetworkGameTheroy {
         ArrayList<Integer> deadNodes = new ArrayList<>();
         ArrayList<Double> totalenergy = new ArrayList<>();
         ArrayList<Double> dumtotalenergy = new ArrayList<>();
-        claculateLp(treeMap, adjacencyList1, close, Firstname, Objtname, CpFirst, CpObject, storageNodes, notremove, deadNodes, totalenergy, dumtotalenergy, "original", "original");
+		ArrayList<Double> newCalenergy = new ArrayList<>();
+        claculateLp(treeMap, adjacencyList1, close, Firstname, Objtname, CpFirst, CpObject, storageNodes, notremove, deadNodes, totalenergy, dumtotalenergy, newCalenergy,"original", "original");
         // add the first row (not removing node)
         
 		Cell cell = energyrow.createCell(0);
@@ -508,17 +509,37 @@ public class SensorNetworkGameTheroy {
 			
 			ArrayList<Double> newstorage = new ArrayList<>();
 			ArrayList<Double> originalstorage = new ArrayList<>();
-			//
-			claculateLp(newtreeMap, adjacencyList1, close, tempFirstname, tempObjtname, tempCpFirst, tempCpObject, storageNodes, tempvalues, tempdeadNodes, newstorage, originalstorage, "c" + String.valueOf(i), "c" + String.valueOf(i));
+			ArrayList<Double> newCalenergy = new ArrayList<>();
+			// fake
+			claculateLp(newtreeMap, adjacencyList1, close, tempFirstname, tempObjtname, tempCpFirst, tempCpObject, storageNodes, tempvalues, tempdeadNodes, newstorage, originalstorage, newCalenergy,"c" + String.valueOf(i), "c" + String.valueOf(i));
 			
 			// fake obj
 			Cell fakeObjvalue = energyrow.createCell(7);
 			fakeObjvalue.setCellValue((double) tempvalues[1]);
-			
+
+			// total cost
+			double trueEnergyPath = 0;
+			for (double D : originalstorage) {
+				trueEnergyPath += D;
+			}
+			Cell trueEfakeObjvalue = energyrow.createCell(17);
+			trueEfakeObjvalue.setCellValue(trueEnergyPath);
+
 			// fake energy cost
 			Cell fakecost = energyrow.createCell(9);
 			fakecost.setCellValue((double) newstorage.get(i - 1));
-			
+
+			Cell deadNodeList = energyrow.createCell(6);
+			deadNodeList.setCellValue(tempdeadNodes.toString());
+
+			// new dead nodes
+			Cell deadnodes = energyrow.createCell(4);
+			deadnodes.setCellValue(tempdeadNodes.size());
+
+			// true energy cost (fake path)
+			Cell truecost = energyrow.createCell(18);
+			truecost.setCellValue((double) newCalenergy.get(i - 1));
+
 			Cell originalEnergy = energyrow.createCell(10);
 			originalEnergy.setCellValue((double) originalstorage.get(i - 1));
 			
@@ -607,8 +628,9 @@ public class SensorNetworkGameTheroy {
 			ArrayList<Integer> deadNodes = new ArrayList<>();
 			ArrayList<Double> newtotalenergy = new ArrayList<>();
 			ArrayList<Double> dumtotalenergy = new ArrayList<>();
+			ArrayList<Double> dumnewCalenergy = new ArrayList<>();
 			// remove
-	        boolean flag = claculateLp(temptreeMap, tempadj, tempclose, Firstname, Objtname, CpFirst, CpObject, tempSN, values, deadNodes, newtotalenergy, dumtotalenergy, "r" + String.valueOf(i),  "r" + String.valueOf(i));
+	        boolean flag = claculateLp(temptreeMap, tempadj, tempclose, Firstname, Objtname, CpFirst, CpObject, tempSN, values, deadNodes, newtotalenergy, dumtotalenergy, dumnewCalenergy,"r" + String.valueOf(i),  "r" + String.valueOf(i));
 	        
 	        // new Obj
 			Cell Objvalue = energyrow.createCell(1);
@@ -623,17 +645,10 @@ public class SensorNetworkGameTheroy {
 			Cell dataitems = energyrow.createCell(3);
 			dataitems.setCellValue(values[3]);
 			
-			// new dead nodes
-			Cell deadnodes = energyrow.createCell(4);
-			deadnodes.setCellValue(values[4]);
-			
 			// old dead node is same as non removed result
 			double originaldead = energysheet.getRow(1).getCell(4).getNumericCellValue();
 			Cell originaldeadnodes = energyrow.createCell(5);
 			originaldeadnodes.setCellValue(originaldead);
-			
-			Cell deadNodeList = energyrow.createCell(6);
-			deadNodeList.setCellValue(deadNodes.toString());
 			
 			Cell utiliyTure = energyrow.createCell(8);
 			double util = (double) values[1] - original;
@@ -677,9 +692,9 @@ public class SensorNetworkGameTheroy {
 		
 	}
 	
-	static boolean claculateLp(Map<String, Link> treeMap, Map<Integer, Set<Integer>> adjacencyList1, HashMap<Integer, List<Integer>> tempclose, 
-			Map<String, IloNumVar> nameFirst, Map<String, IloNumVar> nameObj, IloCplex CpFirst, IloCplex CpObj, int[] storges, double[] exldata, ArrayList<Integer> deadNodes, ArrayList<Double> faketotalenergy, 
-			ArrayList<Double> truetotalenergy, String removed, String Lpfilename) throws IOException, IloException {
+	static boolean claculateLp(Map<String, Link> treeMap, Map<Integer, Set<Integer>> adjacencyList1, HashMap<Integer, List<Integer>> tempclose,
+			Map<String, IloNumVar> nameFirst, Map<String, IloNumVar> nameObj, IloCplex CpFirst, IloCplex CpObj, int[] storges, double[] exldata, ArrayList<Integer> deadNodes, ArrayList<Double> faketotalenergy,
+			ArrayList<Double> truetotalenergy, ArrayList<Double> newCalenergy, String removed, String Lpfilename) throws IOException, IloException {
 		
 		List<IloRange> constraintsFirst = new ArrayList<IloRange>();
 		List<IloRange> constraintsObj = new ArrayList<IloRange>();
@@ -924,22 +939,22 @@ public class SensorNetworkGameTheroy {
         //getMinFile
         
         ArrayList<Double> tempp = new ArrayList<>();
-        
+
+		Map<String, Link> originaltreeMap = new TreeMap<String, Link>(linkstest);
         // calculate the true cost
-        if (removed.charAt(0) == 'c' && Lpfilename.charAt(0) == 'c') {
-        	Map<String, Link> originaltreeMap = new TreeMap<String, Link>(linkstest);
-        	tempp = getMinFile(originaltreeMap, tempclose, CpObj, nameObj, storges, exldata, deadNodes, "O" + removed);
-            for (Double D : tempp) {
-            	truetotalenergy.add(D);
-            }
-            tempp.clear();
-        }
+		if (removed.charAt(0) == 'c' && Lpfilename.charAt(0) == 'c') {
+			tempp = getMinFile(originaltreeMap, tempclose, CpObj, nameObj, storges, exldata, deadNodes, "O" + removed, 0);
+			truetotalenergy.addAll(tempp);
+			tempp.clear();
+		}
+
+		tempp = getMinFile(originaltreeMap, tempclose, CpObj, nameObj, storges, exldata, deadNodes, removed, 1);
+		newCalenergy.addAll(tempp);
+		tempp.clear();
+
         // calculate the fake cost or remove cost
-        tempp = getMinFile(treeMap, tempclose, CpObj, nameObj, storges, exldata, deadNodes, removed);
-        
-        for (Double D : tempp) {
-        	faketotalenergy.add(D);
-        }
+        tempp = getMinFile(treeMap, tempclose, CpObj, nameObj, storges, exldata, deadNodes, removed, 0);
+		faketotalenergy.addAll(tempp);
         
         exldata[1] = CpObj.getObjValue();
         exldata[3] = (int) CpFirst.getObjValue();
@@ -963,7 +978,7 @@ public class SensorNetworkGameTheroy {
 	 * @throws UnknownObjectException 
 	 */
 	static ArrayList<Double> getMinFile(Map<String, Link> treeMap, HashMap<Integer, List<Integer>> tempclose, IloCplex CpIn,
-										Map<String, IloNumVar> cpresult, int[] storages, double[] exldata, ArrayList<Integer> deadNodes, String removed) throws IOException, UnknownObjectException, IloException {
+										Map<String, IloNumVar> cpresult, int[] storages, double[] exldata, ArrayList<Integer> deadNodes, String removed, int method) throws IOException, UnknownObjectException, IloException {
 		//treeMap.get("("+j+", "+i+")").getRCost() <- format to get cost
 		/*
 		 * getRcost() = receive cost
@@ -973,6 +988,7 @@ public class SensorNetworkGameTheroy {
 		// this map contains cost for each node
 		ArrayList<Double> back = new ArrayList<>();
 		HashMap<Integer,List<Double>> map = new HashMap<>();
+		deadNodes.clear();
 
 		// this map contains Scost for each non-generator node (since save cost cannot be retrieve from itself)
 		HashMap<Integer,Double> nodeScost = new HashMap<>();
@@ -1129,12 +1145,20 @@ public class SensorNetworkGameTheroy {
 					map.get(i).get(3)).append("], closest node: ").append(tempclose.get(i).get(0));
 			//System.out.println("Node "+ i + ": "+ map.get(i).get(0) + " " + map.get(i).get(1) + " " + map.get(i).get(2) + " " + map.get(i).get(3));
 			// add the energy cost result to send back
-			back.add(map.get(i).get(3));
+			if (method == 1) {
+				if (map.get(i).get(3) > minCapacity) {
+					back.add((double) minCapacity);
+				} else {
+					back.add(map.get(i).get(3));
+				}
+			} else {
+				back.add(map.get(i).get(3));
+			}
 			// calculate weather the node is dead
 			if (i <= numberOfDG) { // source nodes
 				//  current energy    +   energy cost to rely (transfer + receive) data to closest node  >   the minCapacity user identified
-				if (map.get(i).get(3) + treeMap.get("(" + i + ", " + tempclose.get(i).get(0) + ")").getTCost() +
-						treeMap.get("(" + i + ", " + tempclose.get(i).get(0) + ")").getRCost() >= treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getEnergy()) {
+				if (Math.round((map.get(i).get(3) + treeMap.get("(" + i + ", " + tempclose.get(i).get(0) + ")").getTCost() +
+						treeMap.get("(" + i + ", " + tempclose.get(i).get(0) + ")").getRCost()) * 100) >= 100 * treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getEnergy()) {
 					energy_mincostoutput.append(", status: DEAD!").append(";\r\n");
 					deadcounter++;
 					deadNodes.add(i);
@@ -1142,11 +1166,12 @@ public class SensorNetworkGameTheroy {
 					energy_mincostoutput.append(", status: Good").append(";\r\n");
 				}
 			} else { // storage nodes
+				if (i == 43) System.out.println(map.get(i).get(3));
 				// current energy + energy cost of saving one data item > minCapacity , or
 				// current energy + energy cost to rely (transfer + receive) data to closest node  >  the minCapacity
-				if (map.get(i).get(3) + treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getSCost() >= treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getEnergy() ||
-						map.get(i).get(3) + treeMap.get("(" + i + ", " + tempclose.get(i).get(0) + ")").getTCost() +
-								treeMap.get("(" + i + ", " + tempclose.get(i).get(0) + ")").getRCost() >= treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getEnergy()) {
+				if (Math.round((map.get(i).get(3) + treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getSCost()) * 100) >= 100 * treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getEnergy() ||
+						Math.round((map.get(i).get(3) + treeMap.get("(" + i + ", " + tempclose.get(i).get(0) + ")").getTCost() +
+								treeMap.get("(" + i + ", " + tempclose.get(i).get(0) + ")").getRCost()) * 100) >= 100 * treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getEnergy()) {
 					energy_mincostoutput.append(", status: DEAD!").append(";\r\n");
 					deadcounter++;
 					deadNodes.add(i);
