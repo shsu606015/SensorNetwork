@@ -243,9 +243,9 @@ public class SensorNetworkGameTheroy {
 		Row datarow = datasheet.createRow(rowcounter);
 		Row deadnoderow = deadnodesheet.createRow(rowcounter++);
 		// name for cols
-		String[] row = new String[]{"RemoveNode", "C_{V-{i}}", "C_V", "dataitems", "dead(Cvi)", "dead(Cv)", "deadNodeLabel",
-				"C_V_fake", "Utility_i_Truth_Telling", "C*_i", "C_i", "Utility_i_Lying", "Die_if_lie", "true_dataoffload", "fake_dataoffload", 
-				"Utility_Difference", "Discarded_amount", "True_energy_cost", "Single_node_cost"};
+		String[] row = new String[]{"TargetNode", "C_{V-{i}}", "C_V", "dataitems", "dead(Cvi)", "dead(Cv)", "deadNodeLabel",
+				"C_V_fake", "Utility_i_Truth_Telling", "C*_i", "C_i", "Utility_i_Lying", "Die_if_lie", "True_Data_Receive", "True_Data_Send", "True_Data_Save",
+				"Fake_Data_Receive", "Fake_Data_Send", "Fake_Data_Save", "Utility_Difference", "Discarded_amount", "True_energy_cost", "Single_node_cost"};
 		// write
 		for (int i = 0; i < row.length; i++) {
 			Cell energycell = energyrow.createCell(i);
@@ -254,11 +254,13 @@ public class SensorNetworkGameTheroy {
 
 		energyrow = energysheet.createRow(rowcounter++);
         double[] notremove = new double[row.length];
+        double[] trueDataSend = new double[3];
+		double[] fakeDataSend = new double[3];
         ArrayList<Integer> deadNodes = new ArrayList<>();
         ArrayList<Double> totalenergy = new ArrayList<>();
         ArrayList<Double> dumtotalenergy = new ArrayList<>();
 		ArrayList<Double> newCalenergy = new ArrayList<>();
-        claculateLp(treeMap, adjacencyList1, close, Firstname, Objtname, CpFirst, CpObject, storageNodes, notremove, deadNodes, totalenergy, dumtotalenergy, newCalenergy,"original", "original");
+        claculateLp(treeMap, adjacencyList1, close, Firstname, Objtname, CpFirst, CpObject, storageNodes, notremove, deadNodes, totalenergy, dumtotalenergy, newCalenergy, trueDataSend, fakeDataSend,"original", "original");
         // add the first row (not removing node)
         
 		Cell cell = energyrow.createCell(0);
@@ -510,9 +512,12 @@ public class SensorNetworkGameTheroy {
 			ArrayList<Double> newstorage = new ArrayList<>();
 			ArrayList<Double> originalstorage = new ArrayList<>();
 			ArrayList<Double> newCalenergy = new ArrayList<>();
+
+			double[] trueDataSend = new double[3];
+			double[] fakeDataSend = new double[3];
 			// fake
-			claculateLp(newtreeMap, adjacencyList1, close, tempFirstname, tempObjtname, tempCpFirst, tempCpObject, storageNodes, tempvalues, tempdeadNodes, newstorage, originalstorage, newCalenergy,"c" + String.valueOf(i), "c" + String.valueOf(i));
-			
+			claculateLp(newtreeMap, adjacencyList1, close, tempFirstname, tempObjtname, tempCpFirst, tempCpObject, storageNodes, tempvalues, tempdeadNodes, newstorage, originalstorage, newCalenergy, trueDataSend, fakeDataSend,"c" + String.valueOf(i), "c" + String.valueOf(i));
+
 			// fake obj
 			Cell fakeObjvalue = energyrow.createCell(7);
 			fakeObjvalue.setCellValue((double) tempvalues[1]);
@@ -522,7 +527,7 @@ public class SensorNetworkGameTheroy {
 			for (double D : originalstorage) {
 				trueEnergyPath += D;
 			}
-			Cell trueEfakeObjvalue = energyrow.createCell(17);
+			Cell trueEfakeObjvalue = energyrow.createCell(21);
 			trueEfakeObjvalue.setCellValue(trueEnergyPath);
 
 			// fake energy cost
@@ -537,17 +542,25 @@ public class SensorNetworkGameTheroy {
 			deadnodes.setCellValue(tempdeadNodes.size());
 
 			// true energy cost (fake path)
-			Cell truecost = energyrow.createCell(18);
+			Cell truecost = energyrow.createCell(22);
 			truecost.setCellValue((double) newCalenergy.get(i - 1));
 
 			Cell originalEnergy = energyrow.createCell(10);
 			originalEnergy.setCellValue((double) originalstorage.get(i - 1));
 			
-			Cell truedataoffload = energyrow.createCell(13);
-			truedataoffload.setCellValue((double) tempvalues[6]);
-			
-			Cell fakedataoffload = energyrow.createCell(14);
-			fakedataoffload.setCellValue((double) tempvalues[7]);
+			Cell trueDataIn = energyrow.createCell(13);
+			trueDataIn.setCellValue((double) trueDataSend[0]);
+			Cell trueDataOut = energyrow.createCell(14);
+			trueDataOut.setCellValue((double) trueDataSend[1]);
+			Cell trueDataSave = energyrow.createCell(15);
+			trueDataSave.setCellValue((double) trueDataSend[2]);
+
+			Cell fakeDataIn = energyrow.createCell(16);
+			fakeDataIn.setCellValue((double) fakeDataSend[0]);
+			Cell fakeDataOut = energyrow.createCell(17);
+			fakeDataOut.setCellValue((double) fakeDataSend[1]);
+			Cell fakeDataSave = energyrow.createCell(18);
+			fakeDataSave.setCellValue((double) fakeDataSend[2]);
 			
 			// check die 
     		// current energy + energy cost of saving one data item > minCapacity , or 
@@ -630,7 +643,7 @@ public class SensorNetworkGameTheroy {
 			ArrayList<Double> dumtotalenergy = new ArrayList<>();
 			ArrayList<Double> dumnewCalenergy = new ArrayList<>();
 			// remove
-	        boolean flag = claculateLp(temptreeMap, tempadj, tempclose, Firstname, Objtname, CpFirst, CpObject, tempSN, values, deadNodes, newtotalenergy, dumtotalenergy, dumnewCalenergy,"r" + String.valueOf(i),  "r" + String.valueOf(i));
+	        boolean flag = claculateLp(temptreeMap, tempadj, tempclose, Firstname, Objtname, CpFirst, CpObject, tempSN, values, deadNodes, newtotalenergy, dumtotalenergy, dumnewCalenergy, trueDataSend, fakeDataSend,"r" + String.valueOf(i),  "r" + String.valueOf(i));
 	        
 	        // new Obj
 			Cell Objvalue = energyrow.createCell(1);
@@ -666,14 +679,17 @@ public class SensorNetworkGameTheroy {
 			fakeUcell.setCellValue((double) fakeUtility);
 			
 			double diff = energysheet.getRow(rowcounter).getCell(11).getNumericCellValue() - energysheet.getRow(rowcounter).getCell(8).getNumericCellValue();
-			Cell originaldata = energyrow.createCell(15);
+			Cell originaldata = energyrow.createCell(19);
 			originaldata.setCellValue((double) diff);
 
 			double discardData = 0;
 			if (energysheet.getRow(rowcounter).getCell(10).getNumericCellValue() > minCapacity) {
-				discardData = energysheet.getRow(rowcounter).getCell(14).getNumericCellValue() - energysheet.getRow(rowcounter).getCell(13).getNumericCellValue();
+				double trueData = energysheet.getRow(rowcounter).getCell(14).getNumericCellValue() + energysheet.getRow(rowcounter).getCell(15).getNumericCellValue();
+				double fakeData = energysheet.getRow(rowcounter).getCell(17).getNumericCellValue() + energysheet.getRow(rowcounter).getCell(18).getNumericCellValue();
+				discardData = fakeData - trueData;
 			}
-			Cell discard = energyrow.createCell(16);
+
+			Cell discard = energyrow.createCell(20);
 			discard.setCellValue((double) discardData);
 
 			// after writing one row, row++;
@@ -694,7 +710,7 @@ public class SensorNetworkGameTheroy {
 	
 	static boolean claculateLp(Map<String, Link> treeMap, Map<Integer, Set<Integer>> adjacencyList1, HashMap<Integer, List<Integer>> tempclose,
 			Map<String, IloNumVar> nameFirst, Map<String, IloNumVar> nameObj, IloCplex CpFirst, IloCplex CpObj, int[] storges, double[] exldata, ArrayList<Integer> deadNodes, ArrayList<Double> faketotalenergy,
-			ArrayList<Double> truetotalenergy, ArrayList<Double> newCalenergy, String removed, String Lpfilename) throws IOException, IloException {
+			ArrayList<Double> truetotalenergy, ArrayList<Double> newCalenergy, double[] trueDataSend, double[] fakeDataSend, String removed, String Lpfilename) throws IOException, IloException {
 		
 		List<IloRange> constraintsFirst = new ArrayList<IloRange>();
 		List<IloRange> constraintsObj = new ArrayList<IloRange>();
@@ -943,17 +959,17 @@ public class SensorNetworkGameTheroy {
 		Map<String, Link> originaltreeMap = new TreeMap<String, Link>(linkstest);
         // calculate the true cost
 		if (removed.charAt(0) == 'c' && Lpfilename.charAt(0) == 'c') {
-			tempp = getMinFile(originaltreeMap, tempclose, CpObj, nameObj, storges, exldata, deadNodes, "O" + removed, 0);
+			tempp = getMinFile(originaltreeMap, tempclose, CpObj, nameObj, storges, exldata, trueDataSend, fakeDataSend, deadNodes, "O" + removed, 0);
 			truetotalenergy.addAll(tempp);
 			tempp.clear();
 		}
 
-		tempp = getMinFile(originaltreeMap, tempclose, CpObj, nameObj, storges, exldata, deadNodes, removed, 1);
+		tempp = getMinFile(originaltreeMap, tempclose, CpObj, nameObj, storges, exldata, trueDataSend, fakeDataSend, deadNodes, removed, 1);
 		newCalenergy.addAll(tempp);
 		tempp.clear();
 
         // calculate the fake cost or remove cost
-        tempp = getMinFile(treeMap, tempclose, CpObj, nameObj, storges, exldata, deadNodes, removed, 0);
+        tempp = getMinFile(treeMap, tempclose, CpObj, nameObj, storges, exldata, trueDataSend, fakeDataSend, deadNodes, removed, 0);
 		faketotalenergy.addAll(tempp);
         
         exldata[1] = CpObj.getObjValue();
@@ -978,7 +994,7 @@ public class SensorNetworkGameTheroy {
 	 * @throws UnknownObjectException 
 	 */
 	static ArrayList<Double> getMinFile(Map<String, Link> treeMap, HashMap<Integer, List<Integer>> tempclose, IloCplex CpIn,
-										Map<String, IloNumVar> cpresult, int[] storages, double[] exldata, ArrayList<Integer> deadNodes, String removed, int method) throws IOException, UnknownObjectException, IloException {
+										Map<String, IloNumVar> cpresult, int[] storages, double[] exldata, double[] trueDataSend, double[] fakeDataSend, ArrayList<Integer> deadNodes, String removed, int method) throws IOException, UnknownObjectException, IloException {
 		//treeMap.get("("+j+", "+i+")").getRCost() <- format to get cost
 		/*
 		 * getRcost() = receive cost
@@ -1038,9 +1054,14 @@ public class SensorNetworkGameTheroy {
 		}
 
 		// use to check if data items transfered exceed energy capacity
-		double tempcapa = 0.0;
+		double tempCapaRS = 0.0;
+		double tempCapaSave = 0.0;
+
+		double expectRS = 0.0;
+		double expectSave = 0.0;
+
 		double tempenergy = 0.0;
-		double expect = 0.0;
+		boolean flag = false;
 		String tempremoved = removed;
 		int targetnode = tempremoved.equals("original") ? 0 : Integer.parseInt(tempremoved.replaceAll("[^\\d.]", ""));
 
@@ -1064,7 +1085,11 @@ public class SensorNetworkGameTheroy {
 				// T cost = sender's transmit cost - receiver's receive cost
 				double totalTcost = (treeMap.get("("+transNode+", "+disNode+")").getTCost() - treeMap.get("("+transNode+", "+disNode+")").getRCost()) * items;
 				double totalRcost = treeMap.get("("+transNode+", "+disNode+")").getRCost() * items;
+				// record the energy cost
+				map.get(transNode).set(0, map.get(transNode).get(0) + totalTcost); // tansferNode's Tcost
+				map.get(disNode).set(1, map.get(disNode).get(1) + totalRcost); // receiveNode's Rcost
 
+				/*-------------------- calculate data items ------------------------*/
 				// when in is our target node
 				if (transNode == targetnode && targetnode != 0) {
 					// cost for receive + out
@@ -1072,27 +1097,27 @@ public class SensorNetworkGameTheroy {
 					// still have energy
 					if (tempenergy + inoutcost < minCapacity) {
 						tempenergy += inoutcost;
-						tempcapa += items;
+						tempCapaRS += items;
 					} else { // no energy
 						double remainenergy = minCapacity - tempenergy;
 						double transfercost = treeMap.get("("+transNode+", "+disNode+")").getTCost();
 						double cansend = remainenergy / transfercost;
-						tempcapa += cansend;
-						if (exldata[6] == 0.0) {
-							exldata[6] = tempcapa;
+						tempCapaRS += cansend;
+						if (method == 1 && !flag) {
+							trueDataSend[0] = tempCapaRS;
+							trueDataSend[1] = tempCapaRS;
+							flag = true;
 						}
 						tempenergy = minCapacity;
 					}
-					expect += items;
+					expectRS += items;
 				}
-
-				map.get(transNode).set(0, map.get(transNode).get(0) + totalTcost); // tansferNode's Tcost
-				map.get(disNode).set(1, map.get(disNode).get(1) + totalRcost); // receiveNode's Rcost
-
 			} else {
 				// case save data
+				// record energy
 				map.get(transNode).set(2, nodeScost.getOrDefault(transNode, 0.0) * items);
 
+				/* ------------------ calculate data items ------------------------ */
 				// when in is our target node
 				if (transNode == targetnode && targetnode != 0) {
 					// cost for receive + out
@@ -1100,27 +1125,32 @@ public class SensorNetworkGameTheroy {
 					// still have energy
 					if (tempenergy + tempcost < minCapacity) {
 						tempenergy += tempcost;
-						tempcapa += items;
+						tempCapaSave += items;
 					} else { // no energy
 						double remainenergy = minCapacity - tempenergy;
 						double transfercost = nodeScost.getOrDefault(transNode, 0.0);
 						double cansend = remainenergy / transfercost;
-						tempcapa += cansend;
-						if (exldata[6] == 0.0) {
-							exldata[6] = tempcapa;
+						tempCapaSave += cansend;
+						if (method == 1 && !flag) {
+							trueDataSend[2] = tempCapaSave;
+							flag = true;
 						}
 						tempenergy = minCapacity;
 					}
-					expect += items;
+					expectSave += items;
 				}
 			}
-
 		}
 
-		if (exldata[6] == 0.0) {
-			exldata[6] = tempcapa;
+		// if not reach the max energy capacity, save the data item
+		if (method == 1 && !flag) {
+			trueDataSend[0] = tempCapaRS;
+			trueDataSend[1] = tempCapaRS;
+			trueDataSend[2] = tempCapaSave;
 		}
-		exldata[7] = expect;
+		fakeDataSend[0] = expectRS;
+		fakeDataSend[1] = expectRS;
+		fakeDataSend[2] = expectSave;
 
 		// output file
 		StringBuilder energy_mincostoutput = new StringBuilder();
@@ -1143,7 +1173,6 @@ public class SensorNetworkGameTheroy {
 			map.get(i).set(3, totalcost);
 			energy_mincostoutput.append("Node "+ i + ": ["+ map.get(i).get(0) + ", " + map.get(i).get(1) + ", " + map.get(i).get(2) + ", " +
 					map.get(i).get(3)).append("], closest node: ").append(tempclose.get(i).get(0));
-			//System.out.println("Node "+ i + ": "+ map.get(i).get(0) + " " + map.get(i).get(1) + " " + map.get(i).get(2) + " " + map.get(i).get(3));
 			// add the energy cost result to send back
 			if (method == 1) {
 				if (map.get(i).get(3) > minCapacity) {
@@ -1166,7 +1195,6 @@ public class SensorNetworkGameTheroy {
 					energy_mincostoutput.append(", status: Good").append(";\r\n");
 				}
 			} else { // storage nodes
-				if (i == 43) System.out.println(map.get(i).get(3));
 				// current energy + energy cost of saving one data item > minCapacity , or
 				// current energy + energy cost to rely (transfer + receive) data to closest node  >  the minCapacity
 				if (Math.round((map.get(i).get(3) + treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getSCost()) * 100) >= 100 * treeMap.get("(" + tempclose.get(i).get(0) + ", " + i + ")").getEnergy() ||
