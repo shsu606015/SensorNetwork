@@ -31,7 +31,7 @@ Users will need to input basic information of the sensor network such as width, 
 - Select a method that you like to run. (Note: Methods may required another input parameter)
 <img src="https://github.com/shsu606015/SensorNetwork/blob/master/img/select_method.png" width="900"/>
 
-- The program will start sovling until it gets all the results. (Note: "Finish" will appear at the program log when the program finishes)
+- The program will start sovling until it gets all the results. (Note: "Finish" will appear at the program log when the program finishes. Depend on the network's size and the inputed parameters, the program may take up to 30 minutes to complete the result.)
 <img src="https://github.com/shsu606015/SensorNetwork/blob/master/img/solving.png" width="600"/>
 
 - An output file "data.xlsx" that contains the results will be created at the project folder.
