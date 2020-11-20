@@ -314,7 +314,7 @@ public class MinCostILP {
         }
 
         CpFirst.addMaximize(objectiveFirst);
-        CpFirst.exportModel("MinCostFirst_" + nameOfFile + ".lp");
+//        CpFirst.exportModel("MinCostFirst_" + nameOfFile + ".lp");
 
         // only see important messages on screen while solving
         //	CpFirst.setParam(IloCplex.Param.Simplex.Display, 0);

@@ -51,12 +51,12 @@ public class SensorNetworkCPLX {
 		System.out.println("The width (meters) is set to: e.g. 1000");
 		double width = scan.nextDouble();
 //        double width = 1000.0;
-        System.out.println(width);
+//        System.out.println(width);
         
 		System.out.println("The height (meters) is set to: e.g. 1000");
 		double height = scan.nextDouble();
 //        double height = 1000.0;
-        System.out.println(height);
+//        System.out.println(height);
         
 		System.out.println("Number of nodes is set to: e.g. 50");
 		numberOfNodes = scan.nextInt();
@@ -65,7 +65,7 @@ public class SensorNetworkCPLX {
 		System.out.println("Transmission range (in meters) is set to: e.g. 250");
 		int transmissionRange = scan.nextInt();
 //        int transmissionRange = 250;
-        System.out.println(transmissionRange);
+//        System.out.println(transmissionRange);
         
 		System.out.println("Data Generators' amount is set to: e.g.10");
 		numberOfDG = scan.nextInt();

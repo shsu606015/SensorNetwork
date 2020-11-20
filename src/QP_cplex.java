@@ -546,7 +546,7 @@ public class QP_cplex {
         CpObj.setParam(IloCplex.Param.Emphasis.Numerical, true); // Emphasizes precision in numerically unstable or difficult problems.
         CpObj.setParam(IloCplex.Param.Read.Scale, 1); // More aggressive scaling
 
-        CpObj.exportModel("CPLEXObj_TwoCompare" + nameOfFile + ".lp");
+//        CpObj.exportModel("CPLEXObj_TwoCompare" + nameOfFile + ".lp");
 
         // start solving
         // check if the problem is solvable
@@ -847,7 +847,7 @@ public class QP_cplex {
             CpObj.setParam(IloCplex.Param.Emphasis.Numerical, true); // Emphasizes precision in numerically unstable or difficult problems.
             CpObj.setParam(IloCplex.Param.Read.Scale, 1); // More aggressive scaling
 
-            CpObj.exportModel("CPLEXObj_TwoCompare" + nameOfFile + ".lp");
+//            CpObj.exportModel("CPLEXObj_TwoCompare" + nameOfFile + ".lp");
 
             // start solving
             // check if the problem is solvable
