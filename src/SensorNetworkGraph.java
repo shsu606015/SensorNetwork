@@ -175,13 +175,13 @@ public class SensorNetworkGraph extends JPanel implements Runnable {
        }
        
        //Label the nodes
-//       g2.setColor(Color.red);
-//       for (int i = 0; i < graphPoints.size(); i++) {
-//           int x = graphPoints.get(i).x - ovalSize / 2;
-//           int y = graphPoints.get(i).y - ovalSize / 2;
-//           g2.setFont(new Font("TimesRoman", Font.PLAIN, 24));
-//           g2.drawString(""+(i+1), x, y);
-//       }
+       g2.setColor(Color.red);
+       for (int i = 0; i < graphPoints.size(); i++) {
+           int x = graphPoints.get(i).x - ovalSize / 2;
+           int y = graphPoints.get(i).y - ovalSize / 2;
+           g2.setFont(new Font("TimesRoman", Font.PLAIN, 18));
+           g2.drawString(""+(i+1), x, y);
+       }
    }
 
 	public void run() {
