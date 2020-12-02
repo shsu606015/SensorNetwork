@@ -41,3 +41,8 @@ Users will need to input basic information of the sensor network such as width, 
 1. Shang-Lin Hsu
 2. Yu-Ning Yu
 3. <a href="http://csc.csudh.edu/btang/"> Dr. Bin Tang </a>
+
+# Publication
+IEEE MASS 2020:
+<a href="http://csc.csudh.edu/btang/papers/mass-camera.pdf"> DRE^2: Achieving Data Resilience in Wireless Sensor Networks: A Quadratic Programming Approach </a>
+
